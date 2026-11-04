@@ -78,7 +78,7 @@
     layout.border.enable = true;
   };
   programs.niri.settings.spawn-at-startup = [
-    { command = "dms"; args = [ "run" ]; }
+    { command = [ "dms" "run" ]; }
   ];
 
   # DUX
