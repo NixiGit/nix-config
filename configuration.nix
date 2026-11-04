@@ -71,6 +71,8 @@
 
   # Compositor
   programs.niri.enable = true;
+  systemd.user.services.niri.enableDefaultPath = false;
+
 
   # Portal
   xdg.portal.config.niri = {
@@ -110,9 +112,6 @@
     enable = true;
     tunMode.enable = true;
   };
-
-  # Hyprland in case everything else fucks up (DONT FUCKING REMOVE THIS ITS FOR RESUCE)
-  programs.hyprland.enable = true;
 
   # System State Version
   system.stateVersion = "26.05";
