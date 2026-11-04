@@ -1,8 +1,8 @@
 { pkgs, lib, inputs, ... }: {
   imports = [
-      inputs.niri.homeModules.niri
-      inputs.dms.homeModules.dank-material-shell
-      inputs.dms.homeModules.niri
+    inputs.dms.homeModules.dank-material-shell
+    inputs.dms.homeModules.niri
+    inputs.niri.homeModules.niri
   ];
 
   home.username = "nixidev";
@@ -42,11 +42,6 @@
     enable = true;
   };
 
-  qt = {
-    enable = true;
-    platformTheme.name = "gtk3";
-  };
-
   # Shell
   programs.zsh = {
     enable = true;
@@ -70,20 +65,36 @@
     enableZshIntegration = true;
   };
 
-  # Compositor
-  programs.niri.settings = {};
-
-  # Shell
-  programs.dank-material-shell = {
-    enable = true;
-    niri = {
-      enableKeybinds = true;
-      enableSpawn = true;
-    };
-  };
-
   # Modules
   programs.home-manager.enable = true;
+
   programs.zoxide.enable = true;
   programs.fzf.enable = true;
+
+  programs.niri.settings = {};  # Give niri-flake a valid empty set
+  programs.niri.settings = {
+    layout.border.enable = true;
+  };
+  
+  programs.dank-material-shell = {
+    enable = true;
+    systemd.enable = true;
+  
+    niri.includes = {
+      enable = true;
+      override = true;
+      originalFileName = "hm";
+      filesToInclude = [
+        "alttab"
+        "binds-next"
+        "binds"
+        "colors"
+        "cursor"
+        "layout"
+        "outputs"
+        "windowrules"
+        "wpblur"
+      ];
+    };
+  };
 }

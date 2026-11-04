@@ -1,18 +1,3 @@
-input {
-	keyboard {
-		xkb { layout "us" }
-	}
-}
-
-layout {
-	gaps 16
-	center-focused-column "never"
-}
-
 binds {
 	Mod+Return { spawn "kitty"; }
-	Mod+Shift+E { quit; }
-	Mod+Space { spawn "dms" "ipc" "call" "launcher" "toggle"; }
 }
-
-spawn-at-startup "dms" "run"

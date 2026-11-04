@@ -30,6 +30,7 @@
   services.xserver.xkb = {
     layout = "us";
     variant = "";
+    options = "";
   };
 
   # Shell
@@ -39,9 +40,10 @@
   users.users."nixidev" = {
     isNormalUser = true;
     description = "nixidev";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "seat" ];
     shell = pkgs.zsh;
   };
+  services.seatd.enable = true;
 
   # Packages & Flakes
   nixpkgs.config.allowUnfree = true;
@@ -55,25 +57,24 @@
   ];
 
   programs.nh = {
-      enable = true;
-      clean.enable = true;
-      clean.extraArgs = "--keep-since 4d --keep 3";
-      flake = "/home/nixidev/nix-config";
-    };
+    enable = true;
+    clean.enable = true;
+    clean.extraArgs = "--keep-since 4d --keep 3";
+    flake = "/home/nixidev/nix-config";
+  };
+
+  # Greeter
+  services.displayManager.dux-greeter = {
+    enable = true;
+    compositor.name = "niri";
+  };
 
   # Compositor
   programs.niri.enable = true;
-  programs.niri.package = pkgs.niri;
 
-  # Sessions
-  services.greetd = {
-    enable = true;
-    settings = {
-      default_session = {
-        command = "${config.programs.niri.package}/bin/niri-session";
-        user = "nixidev";
-      };
-    };
+  # Portal
+  xdg.portal.config.niri = {
+    "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
   };
 
   # Graphics & Nvidia Drivers
@@ -96,14 +97,17 @@
 
   # API keys
   environment.sessionVariables = {
-      OPENROUTER_API_KEY = "REDACTED";
-    };
+    OPENROUTER_API_KEY = "REDACTED";
+  };
 
   # VPN
   programs.throne = {
     enable = true;
     tunMode.enable = true;
   };
+
+  # Hyprland in case everything else fucks up (DONT FUCKING REMOVE THIS ITS FOR RESUCE)
+  programs.hyprland.enable = true;
 
   # System State Version
   system.stateVersion = "26.05";
