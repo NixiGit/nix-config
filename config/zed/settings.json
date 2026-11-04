@@ -1,0 +1,30 @@
+{
+  "agent": {
+    "default_model": {
+      "model": "openrouter/free",
+      "provider": "openrouter"
+    }
+  },
+  "language_models": {
+    "open_router": {
+      "api_url": "https://openrouter.ai/api/v1",
+      "available_models": [
+        {
+          "display_name": "OpenRouter (Free Router)",
+          "max_tokens": 200000,
+          "name": "openrouter/free",
+          "supports_tools": true
+        },
+        {
+          "display_name": "OpenRouter (Auto)",
+          "max_tokens": 200000,
+          "name": "openrouter/auto",
+          "supports_tools": true
+        }
+      ]
+    }
+  },
+  "telemetry": {
+    "metrics": false
+  }
+}
