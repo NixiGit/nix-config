@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
   imports = [
@@ -69,10 +69,28 @@
     compositor.name = "niri";
   };
 
+  # Custom Session (cuz niri on nix is a bugged mess)
+  services.displayManager.sessionPackages = lib.mkForce (let
+    niri-dux = pkgs.writeTextFile {
+      name = "niri-dux-session";
+      destination = "/share/wayland-sessions/niri-dux.desktop";
+      text = ''
+        [Desktop Entry]
+        Name=Niri (Dux)
+        Comment=Niri with explicit DRM and dbus
+        Exec=env WLR_DRM_DEVICES=/dev/dri/card1 ${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.niri}/bin/niri
+        Type=Application
+      '';
+      derivationArgs = { passthru.providedSessions = [ "niri-dux" ]; };
+    };
+  in [ niri-dux ]);
+
+  # Override default session
+  services.displayManager.defaultSession = lib.mkForce "niri-dux";
+
   # Compositor
   programs.niri.enable = true;
   systemd.user.services.niri.enableDefaultPath = false;
-
 
   # Portal
   xdg.portal.config.niri = {
@@ -100,10 +118,10 @@
   # Environment variables
   environment.sessionVariables = {
     QT_QPA_PLATFORM = "wayland";
-  };
-
-  # API keys
-  environment.sessionVariables = {
+    WLR_DRM_DEVICES = "/dev/dri/card1";
+    WLR_RENDERER = "gles2";
+    GBM_BACKEND = "nvidia_drm";
+    LIBVA_DRIVER_NAME = "nvidia";
     OPENROUTER_API_KEY = "REDACTED";
   };
 
@@ -112,6 +130,9 @@
     enable = true;
     tunMode.enable = true;
   };
+
+  # Nvidia Quirks
+  boot.kernelParams = [ "nvidia_drm.modeset=1" ];
 
   # System State Version
   system.stateVersion = "26.05";
