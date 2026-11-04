@@ -30,7 +30,7 @@
     nixos-icons
   ];
 
-  # XDG
+  # XDG Links
   xdg.configFile."kitty/kitty.conf".source = ./config/kitty/kitty.conf;
   xdg.configFile."fastfetch/config.jsonc".source = ./config/fastfetch/config.jsonc;
   xdg.configFile."btop/btop.conf".source = ./config/btop/btop.conf;
@@ -42,7 +42,7 @@
     enable = true;
   };
 
-  # Shell
+  # Terminal Shell
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -65,20 +65,26 @@
     enableZshIntegration = true;
   };
 
-  # Modules
+  # Home Manager
   programs.home-manager.enable = true;
 
+  # CLI
   programs.zoxide.enable = true;
   programs.fzf.enable = true;
 
+  # Niri
   programs.niri.settings = {};  # Give niri-flake a valid empty set
   programs.niri.settings = {
     layout.border.enable = true;
   };
-  
+  programs.niri.settings.spawn-at-startup = [
+    { command = "dms"; args = [ "run" ]; }
+  ];
+
+  # DUX
   programs.dank-material-shell = {
     enable = true;
-    systemd.enable = true;
+    systemd.enable = false;
   
     niri.includes = {
       enable = true;
