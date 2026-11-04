@@ -73,6 +73,7 @@
   programs.fzf.enable = true;
 
   # Niri
+  systemd.user.services.niri.enableDefaultPath = false;
   programs.niri.settings = {};  # Give niri-flake a valid empty set
   programs.niri.settings = {
     layout.border.enable = true;
