@@ -95,6 +95,11 @@
   # Fix for dynamically linked LSP binaries
   programs.nix-ld.enable = true;
 
+  # Environment variables
+  environment.sessionVariables = {
+    QT_QPA_PLATFORM = "wayland";
+  };
+
   # API keys
   environment.sessionVariables = {
     OPENROUTER_API_KEY = "REDACTED";
