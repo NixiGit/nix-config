@@ -1,12 +1,12 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  
+
     home-manager = {
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-  
+
     dms = {
       url = "github:duxlabs-dev/dux-shell/stable";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -15,6 +15,22 @@
     niri = {
       url = "github:epireyn/niri-flake";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    matugen = {
+      url = "github:InioX/Matugen";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
+
+    zen-wabi = {
+      url = "github:parazeeknova/zen-wabi";
+      flake = false;
     };
   };
 
@@ -31,6 +47,7 @@
           home-manager.users.nixidev = import ./home.nix;
           home-manager.extraSpecialArgs = { inherit inputs; };
           home-manager.backupFileExtension = "backup";
+          home-manager.overwriteBackup = true;
         }
       ];
     };
