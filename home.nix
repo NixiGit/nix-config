@@ -14,7 +14,7 @@
   # Packages
   home.packages = with pkgs; [
     htop git nix-output-monitor nvd wl-clipboard cliphist pamixer wireplumber
-    eza ripgrep fastfetch bat fzf btop vscodium bash nixos-icons python3
+    eza ripgrep fastfetch bat fzf btop bash nixos-icons python3
   ];
 
   # XDG Links
@@ -78,6 +78,7 @@
   # --- VS Code + Cline (AI) Setup ---
   programs.vscode = {
     enable = true;
+    package = pkgs.vscodium;
     profiles.default = {
       extensions = with pkgs.vscode-extensions; [
         saoudrizwan.claude-dev       # Cline (Agentic AI)
