@@ -9,6 +9,9 @@
   home.homeDirectory = "/home/nixidev";
   home.stateVersion = "26.05";
 
+  # Prevent Home Manager from restarting user services during activation
+  systemd.user.startServices = false;
+
   # Packages
   home.packages = with pkgs; [
     htop
@@ -26,6 +29,7 @@
     fzf
     btop
     zed-editor
+    bash
 
     nixos-icons
   ];
@@ -36,6 +40,7 @@
   xdg.configFile."btop/btop.conf".source = ./config/btop/btop.conf;
   xdg.configFile."bat/config".source = ./config/bat/config;
   xdg.configFile."zed/settings.json".source = ./config/zed/settings.json;
+  xdg.configFile."micro/settings.json".source = ./config/micro/settings.json;
 
   # Theme
   gtk = {
@@ -72,11 +77,46 @@
   programs.zoxide.enable = true;
   programs.fzf.enable = true;
 
-  # Niri
-  programs.niri.settings = {};  # Give niri-flake a valid empty set
+  # Niri Systemd Service (fixes NVIDIA GPU race condition)
+  systemd.user.services.niri = {
+    Unit = {
+      Description = "Niri Compositor";
+      After = [ "graphical-session.target" ];
+      Wants = [ "graphical-session.target" ];
+    };
+    Service = {
+      # Wait for the NVIDIA driver to initialize before starting Niri
+      ExecStartPre = "${pkgs.coreutils}/bin/sleep 3";
+      ExecStart = "${pkgs.niri}/bin/niri-session";
+      Restart = "on-failure";
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
+
+  # DMS Lock Service (systemd-native readiness check)
+  systemd.user.services.dms-lock = {
+    Unit = {
+      Description = "Lock screen after DMS starts";
+      After = [ "niri.service" ];
+      Wants = [ "niri.service" ];
+    };
+    Service = {
+      Type = "oneshot";
+      # Poll the IPC socket until DMS is ready, then lock immediately
+      ExecStart = "${pkgs.bash}/bin/bash -c 'until dms ipc call lock lock 2>/dev/null; do sleep 0.5; done'";
+    };
+    Install.WantedBy = [ "niri.service" ];
+  };
+
+  # Niri Settings
   programs.niri.settings = {
     layout.border.enable = true;
+    prefer-no-csd = true;
+    hotkey-overlay = {
+      skip-at-startup = true;
+    };
   };
+  
   programs.niri.settings.spawn-at-startup = [
     { command = [ "dms" "run" ]; }
   ];

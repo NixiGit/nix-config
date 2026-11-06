@@ -30,6 +30,7 @@
           home-manager.useUserPackages = true;
           home-manager.users.nixidev = import ./home.nix;
           home-manager.extraSpecialArgs = { inherit inputs; };
+          home-manager.backupFileExtension = "backup";
         }
       ];
     };

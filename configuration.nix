@@ -63,30 +63,13 @@
     flake = "/home/nixidev/nix-config";
   };
 
-  # Greeter
-  services.displayManager.dux-greeter = {
-    enable = true;
-    compositor.name = "niri";
-  };
-
-  # Custom Session (cuz niri on nix is a bugged mess)
-  services.displayManager.sessionPackages = lib.mkForce (let
-    niri-dux = pkgs.writeTextFile {
-      name = "niri-dux-session";
-      destination = "/share/wayland-sessions/niri-dux.desktop";
-      text = ''
-        [Desktop Entry]
-        Name=Niri (Dux)
-        Comment=Niri with explicit DRM and dbus
-        Exec=env WLR_DRM_DEVICES=/dev/dri/card1 ${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.niri}/bin/niri
-        Type=Application
-      '';
-      derivationArgs = { passthru.providedSessions = [ "niri-dux" ]; };
-    };
-  in [ niri-dux ]);
-
-  # Override default session
-  services.displayManager.defaultSession = lib.mkForce "niri-dux";
+  # Auto-login on TTY1
+  services.getty.autologinUser = "nixidev";
+  environment.loginShellInit = ''
+    if [ "$(tty)" = "/dev/tty1" ]; then
+      exec systemctl --user start niri.service
+    fi
+  '';
 
   # Compositor
   programs.niri.enable = true;
