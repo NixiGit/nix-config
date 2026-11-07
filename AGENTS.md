@@ -24,6 +24,17 @@ Never attempt a third blind retry. Never cycle through variations hoping one sti
 
 **Committing:** after a successful change, commit it and bump the patch tag (`v0.5.x`) with a short message.
 
+**Verification — minimal logging (hard rule).**
+
+Standard verification command:
+```sh
+nix build --dry-run --quiet --no-build-output .#nixosConfigurations.nix.config.system.build.toplevel 2>&1 | tail -n 20
+```
+
+1. Always append `--quiet` and `--no-build-output` to `nix build` and `nix eval`.
+2. Pipe stderr to `tail -n 20` (or `head -n 20`) so only the final error lines are visible, not the whole dependency tree.
+3. If a command fails, DO NOT re-run it to get more logs. Report the 20 lines you already have and ask the user to run it manually if deeper inspection is needed.
+
 ## 1. Project Intent
 
 Fully declarative, pure NixOS config for a **MD3E (Material Design 3 Expressive)** desktop.
