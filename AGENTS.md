@@ -28,10 +28,10 @@ Never attempt a third blind retry. Never cycle through variations hoping one sti
 
 Standard verification command:
 ```sh
-nix build --dry-run --quiet --no-build-output .#nixosConfigurations.nix.config.system.build.toplevel 2>&1 | tail -n 20
+nix build --dry-run --quiet .#nixosConfigurations.nix.config.system.build.toplevel 2>&1 | tail -n 20
 ```
 
-1. Always append `--quiet` and `--no-build-output` to `nix build` and `nix eval`.
+1. Always append `--quiet` to `nix build` and `nix eval`.
 2. Pipe stderr to `tail -n 20` (or `head -n 20`) so only the final error lines are visible, not the whole dependency tree.
 3. If a command fails, DO NOT re-run it to get more logs. Report the 20 lines you already have and ask the user to run it manually if deeper inspection is needed.
 

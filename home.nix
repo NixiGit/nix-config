@@ -1,4 +1,4 @@
-{ pkgs, inputs, ... }:
+{ pkgs, config, inputs, ... }:
 
 let
   # ~/.zen only: nixpkgs forces MOZ_LEGACY_PROFILES=1; update if the profile resets.
@@ -10,12 +10,20 @@ in
     inputs.dms.homeModules.niri
     inputs.niri.homeModules.niri
     inputs.zen-browser.homeModules.twilight
+    inputs.sops-nix.homeManagerModules.sops
   ];
 
   home.username = "nixidev";
   home.homeDirectory = "/home/nixidev";
   home.stateVersion = "26.05";
-  home.sessionVariables.POLZA_API_KEY = "REDACTED";
+  home.sessionVariables.POLZA_API_KEY = config.sops.secrets."polza_api_key".path;
+
+  # secrets
+  sops = {
+    defaultSopsFile = ./secrets.yaml;
+    age.keyFile = "/home/nixidev/.config/sops/age/keys.txt";
+    secrets."polza_api_key" = { };
+  };
 
   # packages
   home.packages = with pkgs; [
@@ -144,7 +152,7 @@ in
 
       language_models.openai_compatible.polza = {
         api_url = "https://polza.ai/api/v1";
-        api_key = "REDACTED";
+        api_key = config.sops.secrets."polza_api_key".path;
         available_models = [
           {
             name = "deepseek/deepseek-v4.1-flash";

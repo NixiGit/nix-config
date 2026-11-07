@@ -22,6 +22,19 @@ in
   # nix
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.auto-optimise-store = true;
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 10d";
+  };
+
+  # secrets
+  sops = {
+    defaultSopsFile = ./secrets.yaml;
+    age.keyFile = "/home/nixidev/.config/sops/age/keys.txt";
+    secrets."polza_api_key" = { };
+  };
 
   # locale
   time.timeZone = "Europe/Moscow";
@@ -62,6 +75,7 @@ in
     kitty
     micro
     autologin_on_7
+    bore-cli
   ];
   programs.nix-ld.enable = true;
 
@@ -105,6 +119,32 @@ in
   services.pipewire.enable = true;
   services.pipewire.pulse.enable = true;
 
+  # performance
+  security.polkit.enable = true;
+  hardware.bluetooth.enable = false;
+  programs.gamemode.enable = true;
+  services.scx = {
+    enable = true;
+    scheduler = "scx_lavd";
+  };
+  services.ananicy = {
+    enable = true;
+    package = pkgs.ananicy-cpp;
+    rulesProvider = pkgs.ananicy-rules-cachyos;
+  };
+
+  # fonts
+  fonts.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.symbols-only
+    material-symbols
+    inter
+  ];
+  fonts.fontconfig.defaultFonts = {
+    sansSerif = [ "Inter" ];
+    monospace = [ "JetBrainsMono Nerd Font" ];
+  };
+
   # graphics
   hardware.graphics = {
     enable = true;
@@ -115,6 +155,8 @@ in
     modesetting.enable = true;
     open = true;
     nvidiaSettings = true;
+    powerManagement.enable = true;
+    nvidiaPersistenced = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
   environment.sessionVariables = {
@@ -124,7 +166,7 @@ in
     WLR_RENDERER = "gles2";
     GBM_BACKEND = "nvidia_drm";
     LIBVA_DRIVER_NAME = "nvidia";
-    POLZA_API_KEY = "REDACTED";
+    POLZA_API_KEY = config.sops.secrets."polza_api_key".path;
     POLZA_BASE_URL = "https://polza.ai/api/v1";
   };
 
