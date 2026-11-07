@@ -14,15 +14,12 @@ in
     ./hardware-configuration.nix
   ];
 
-  # Bootloader
   boot.loader.limine.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Networking
   networking.hostName = "nix";
   networking.networkmanager.enable = true;
 
-  # Localization
   time.timeZone = "Europe/Moscow";
   i18n.defaultLocale = "en_US.UTF-8";
   i18n.extraLocaleSettings = {
@@ -36,16 +33,10 @@ in
     LC_TELEPHONE = "ru_RU.UTF-8";
     LC_TIME = "ru_RU.UTF-8";
   };
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-    options = "";
-  };
+  services.xserver.xkb = { layout = "us"; variant = ""; options = ""; };
 
-  # Shell
   programs.zsh.enable = true;
 
-  # User Account
   users.users."nixidev" = {
     isNormalUser = true;
     description = "nixidev";
@@ -54,7 +45,6 @@ in
   };
   services.seatd.enable = true;
 
-  # Packages & Flakes
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -72,7 +62,6 @@ in
     flake = "/home/nixidev/nix-config";
   };
 
-  # Autologin on TTY7
   systemd.services.autologin = {
     enable = true;
     restartIfChanged = lib.mkForce false;
@@ -101,23 +90,15 @@ in
     updateWtmp = true;
   };
 
-  # Compositor
   programs.niri.enable = true;
   systemd.user.services.niri.enableDefaultPath = false;
 
-  # Portal
   xdg.portal.config.niri = {
     "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
   };
 
-  # Graphics & Nvidia Drivers
-  hardware.graphics = {
-    enable = true;
-    enable32Bit = true;
-  };
-
+  hardware.graphics = { enable = true; enable32Bit = true; };
   services.xserver.videoDrivers = [ "nvidia" ];
-
   hardware.nvidia = {
     modesetting.enable = true;
     open = true;
@@ -125,29 +106,22 @@ in
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
-  # Fix for dynamically linked LSP binaries
   programs.nix-ld.enable = true;
 
-  # Environment variables
   environment.sessionVariables = {
     QT_QPA_PLATFORM = "wayland";
+    NIXOS_OZONE_WL = "1"; # Helps Electron apps use Wayland
     WLR_DRM_DEVICES = "/dev/dri/card1";
     WLR_RENDERER = "gles2";
     GBM_BACKEND = "nvidia_drm";
     LIBVA_DRIVER_NAME = "nvidia";
-    POLZA_AI_API_KEY = "pza-lvzZ64zjhasNU3TnzbW3eow2iJX9BUol"; 
+    POLZA_AI_API_KEY = "pza-lvzZ64zjhasNU3TnzbW3eow2iJX9BUol";
     POLZA_BASE_URL = "https://polza.ai/api/v1";
   };
 
-  # VPN
-  programs.throne = {
-    enable = true;
-    tunMode.enable = true;
-  };
+  programs.throne = { enable = true; tunMode.enable = true; };
 
-  # Nvidia Quirks & TTY Blanking
   boot.kernelParams = [ "nvidia_drm.modeset=1" "consoleblank=0" ];
 
-  # System State Version
   system.stateVersion = "26.05";
 }

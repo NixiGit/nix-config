@@ -11,10 +11,35 @@
   home.homeDirectory = "/home/nixidev";
   home.stateVersion = "26.05";
 
+  # Inject the verified working API key
+  home.sessionVariables = {
+    POLZA_API_KEY = "REDACTED";
+  };
+
   # Packages
   home.packages = with pkgs; [
-    htop git nix-output-monitor nvd wl-clipboard cliphist pamixer wireplumber
-    eza ripgrep fastfetch bat fzf btop bash nixos-icons python3
+    htop
+    git
+    nix-output-monitor
+    nvd
+    wl-clipboard
+    cliphist
+    pamixer
+    wireplumber
+    eza
+    ripgrep
+    fastfetch
+    bat
+    fzf
+    btop
+    bash
+    nixos-icons
+    python3
+    nixd
+    uv 
+    mcp-server-fetch 
+    mcp-server-filesystem 
+    mcp-server-git 
   ];
 
   # XDG Links
@@ -22,10 +47,14 @@
   xdg.configFile."fastfetch/config.jsonc".source = ./config/fastfetch/config.jsonc;
   xdg.configFile."btop/btop.conf".source = ./config/btop/btop.conf;
   xdg.configFile."bat/config".source = ./config/bat/config;
-    xdg.configFile."micro/settings.json".source = ./config/micro/settings.json;
+  xdg.configFile."micro/settings.json".source = ./config/micro/settings.json;
 
-  gtk.enable = true;
+  # Theme
+  gtk = {
+    enable = true;
+  };
 
+  # Terminal Shell
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -38,12 +67,20 @@
       cat = "bat --style=plain";
       grep = "rg";
       cd = "z";
-      code = "codium";
+      code = "zeditor";
     };
   };
 
-  programs.starship = { enable = true; enableZshIntegration = true; };
+  # Prompt
+  programs.starship = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
+  # Home Manager
   programs.home-manager.enable = true;
+
+  # CLI
   programs.zoxide.enable = true;
   programs.fzf.enable = true;
 
@@ -51,13 +88,20 @@
   programs.niri.settings = {
     layout.border.enable = false;
     prefer-no-csd = true;
-    hotkey-overlay.skip-at-startup = true;
+    hotkey-overlay = {
+      skip-at-startup = true;
+    };
     input = {
-      focus-follows-mouse.enable = true;
+      focus-follows-mouse = {
+        enable = true;
+        max-scroll-amount = "0%";
+      };
       warp-mouse-to-focus.enable = true;
     };
   };
   
+  # NOTE: NO spawn-at-startup FOR DMS. Systemd handles it.
+
   # DUX
   programs.dank-material-shell = {
     enable = true;
@@ -69,32 +113,72 @@
       override = true;
       originalFileName = "hm";
       filesToInclude = [
-        "alttab" "binds-next" "binds" "colors" "cursor"
-        "layout" "outputs" "windowrules" "wpblur"
+        "alttab"
+        "binds-next"
+        "binds"
+        "colors"
+        "cursor"
+        "layout"
+        "outputs"
+        "windowrules"
+        "wpblur"
       ];
     };
   };
 
-  # --- VS Code + Cline (AI) Setup ---
-  programs.vscode = {
+  # --- Zed Editor + Polza AI + MCP Servers ---
+  programs.zed-editor = {
     enable = true;
-    package = pkgs.vscodium;
-    profiles.default = {
-      extensions = with pkgs.vscode-extensions; [
-        saoudrizwan.claude-dev       # Cline (Agentic AI)
-        continue.continue            # Continue (Fallback AI autocomplete)
-      ];
-      userSettings = {
-        # Cline configuration for Polza AI (OpenAI Compatible)
-        "cline.apiProvider" = "openai";
-        "cline.apiKey" = "\${env:POLZA_AI_API_KEY}";
-        "cline.apiBaseUrl" = "\${env:POLZA_BASE_URL}";
-        "cline.model" = "anthropic/claude-3.5-sonnet"; # Or whatever Polza model you prefer
-        
-        # UI settings
-        "workbench.colorTheme" = "DMS - Dank Material Shell";
-        "window.titleBarStyle" = "native";
-        "editor.fontFamily" = "Fira Code";
+    extensions = [ "nix" "toml" "elixir" "make" ];
+    userSettings = {
+      theme = "One Dark";
+      buffer_font_family = "Fira Code";
+      
+      lsp = {
+        nil = {
+          binary.path = "${pkgs.nixd}/bin/nixd";
+        };
+      };
+      
+      language_models = {
+        openai_compatible = {
+          polza = {
+            api_url = "https://polza.ai/api/v1";
+            api_key = "REDACTED";
+            available_models = [
+              {
+                name = "deepseek/deepseek-v4.1-flash";
+                display_name = "DeepSeek V4.1 Flash";
+                max_tokens = 128000;
+              }
+            ];
+          };
+        };
+      };
+
+      agent = {
+        default_model = {
+          provider = "polza";
+          model = "deepseek/deepseek-v4.1-flash";
+        };
+      };
+
+      # Context servers (MCP) for fetch, filesystem, git, and web search
+      context_servers = {
+        fetch = {
+          command = "${pkgs.mcp-server-fetch}/bin/mcp-server-fetch";
+        };
+        filesystem = {
+          command = "${pkgs.mcp-server-filesystem}/bin/mcp-server-filesystem";
+          args = [ "/home/nixidev" ];
+        };
+        git = {
+          command = "${pkgs.mcp-server-git}/bin/mcp-server-git";
+        };
+        web-search = {
+          command = "${pkgs.uv}/bin/uvx";
+          args = [ "duckduckgo-mcp-server" ];
+        };
       };
     };
   };
@@ -107,13 +191,16 @@
       isDefault = true;
       userChrome = "${inputs.zen-wabi}/userChrome.css.template";
       userContent = "${inputs.zen-wabi}/userContent.css.template";
-      settings."userChromeJS.experimental.enabled" = true;
+      settings = {
+        "userChromeJS.experimental.enabled" = true;
+      };
     };
   };
 
+  # FX-Autoconfig JS bridge
   home.file.".zen/default/chrome/JS".source = "${inputs.zen-wabi}/fx-autoconfig/profile/chrome/JS";
 
-  # --- Matugen (Zen + VS Code) ---
+  # --- Matugen (Zen + Zed) ---
   programs.matugen = {
     enable = true;
     templates = {
@@ -124,24 +211,6 @@
       zen-content = {
         input_path = "${inputs.zen-wabi}/userContent.css.template";
         output_path = "~/.zen/default/chrome/userContent.css";
-      };
-      # Generate a VS Code theme JSON for the DMS extension
-      vscode-theme = {
-        input_path = pkgs.writeText "vscode-theme.json" ''
-          {
-            "name": "DMS - Dank Material Shell",
-            "type": "dark",
-            "colors": {
-              "editor.background": "{{colors.surface.default.hex}}",
-              "editor.foreground": "{{colors.on_surface.default.hex}}",
-              "sideBar.background": "{{colors.surface_container_low.default.hex}}",
-              "activityBar.background": "{{colors.surface_container.default.hex}}",
-              "statusBar.background": "{{colors.primary.default.hex}}",
-              "statusBar.foreground": "{{colors.on_primary.default.hex}}"
-            }
-          }
-        '';
-        output_path = "~/.cache/matugen/vscode-colors.json";
       };
     };
   };
