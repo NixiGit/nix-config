@@ -76,27 +76,6 @@
         "type": "github"
       }
     },
-    "matugen": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "systems": "systems"
-      },
-      "locked": {
-        "lastModified": 1793907773,
-        "narHash": "sha256-5sWBQ4dkprnS+BMxlj1jYbfEEeln6wObA7KRlW26woo=",
-        "owner": "InioX",
-        "repo": "Matugen",
-        "rev": "e36299652716b1ccf2836a29ad7beb3c0854c502",
-        "type": "github"
-      },
-      "original": {
-        "owner": "InioX",
-        "repo": "Matugen",
-        "type": "github"
-      }
-    },
     "niri": {
       "inputs": {
         "niri-stable": "niri-stable",
@@ -191,26 +170,9 @@
       "inputs": {
         "dms": "dms",
         "home-manager": "home-manager",
-        "matugen": "matugen",
         "niri": "niri",
         "nixpkgs": "nixpkgs",
-        "zen-browser": "zen-browser",
-        "zen-wabi": "zen-wabi"
-      }
-    },
-    "systems": {
-      "locked": {
-        "lastModified": 1689347949,
-        "narHash": "sha256-12tWmuL2zgBgZkdoB6qXZsgJEH9LR3oUgpaQq2RbI80=",
-        "owner": "nix-systems",
-        "repo": "default-linux",
-        "rev": "31732fcf5e8fea42e59c2488ad31a0e651500f68",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default-linux",
-        "type": "github"
+        "zen-browser": "zen-browser"
       }
     },
     "xwayland-satellite-stable": {
@@ -266,22 +228,6 @@
       "original": {
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "type": "github"
-      }
-    },
-    "zen-wabi": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1780835066,
-        "narHash": "sha256-RmZ0WX4WzQ/TK/fbIog8p7r+kGuHe1x1heSZpBd6rI4=",
-        "owner": "parazeeknova",
-        "repo": "zen-wabi",
-        "rev": "4b42ce351504f95de53aaf57d6bf70df85e0dd53",
-        "type": "github"
-      },
-      "original": {
-        "owner": "parazeeknova",
-        "repo": "zen-wabi",
         "type": "github"
       }
     }

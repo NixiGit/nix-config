@@ -1,0 +1,8 @@
+/* Zen Browser theming entrypoint.
+ *
+ * The colors themselves live in ~/.config/dms/zen.css, which DMS (Dux Shell)
+ * regenerates with Matugen whenever the wallpaper/theme changes. Do not add
+ * colors here: this file exists only to pull the DMS-generated stylesheet
+ * into Zen's chrome.
+ */
+@import url("file:///home/nixidev/.config/dms/zen.css");
