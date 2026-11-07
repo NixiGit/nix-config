@@ -37,4 +37,6 @@ This repository is a fully declarative, pure NixOS configuration for an **MD3E (
 6. **TTY Blanking**: Handled via the `consoleblank=0` kernel parameter.
 
 ## Current State
-The system is almost fully operational and committed. The last known good state is tagged `v0.5.1`. All subsequent modifications should be tested with `nh os switch` and rolled back if they break the pure declarative flow.
+The system is almost fully operational and committed. The last known good state is tagged `v0.5.2`. All subsequent modifications should be tested with `nh os switch` and rolled back if they break the pure declarative flow.
+
+Commit every change automatically, bumping the patch tag (`v0.5.x`) with a short message.
