@@ -73,5 +73,5 @@ Forbidden: imperative scripts, `--impure`, manual state edits. Everything goes t
 
 ## 6. Current State
 
-System is nearly fully operational. Last known good state: tag **`v0.5.2`**.
+System is nearly fully operational. Last known good state: tag **`v0.5.5`** (post-cleanup: pipewire enabled, `POLZA_API_KEY` unified).
 Test every change with `nh os switch`; roll back if it breaks the pure declarative flow.
