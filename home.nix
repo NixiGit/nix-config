@@ -3,6 +3,23 @@
 let
   # ~/.zen only: nixpkgs forces MOZ_LEGACY_PROFILES=1; update if the profile resets.
   zenProfile = ".zen/jh5e32x2.Default Profile";
+
+  # Zed resolves an openai_compatible provider's credential from
+  # <PROVIDER_ID>_API_KEY in its own process env ("polza" -> POLZA_API_KEY);
+  # keys in settings.json are ignored, and without a running Secret Service
+  # the keychain fails. Wrap the package so every launch path (CLI, desktop
+  # entry) gets the decrypted key. Only the runtime path is baked in, never
+  # the secret value.
+  zedWithPolza = pkgs.symlinkJoin {
+    name = "zed-editor-polza";
+    paths = [ pkgs.zed-editor ];
+    preferLocalBuild = true;
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/zeditor \
+        --run 'export POLZA_API_KEY="$(${pkgs.coreutils}/bin/cat ${config.sops.secrets."polza_api_key".path} 2>/dev/null)"'
+    '';
+  };
 in
 {
   imports = [
@@ -16,7 +33,6 @@ in
   home.username = "nixidev";
   home.homeDirectory = "/home/nixidev";
   home.stateVersion = "26.05";
-  home.sessionVariables.POLZA_API_KEY = config.sops.secrets."polza_api_key".path;
 
   # secrets
   sops = {
@@ -24,75 +40,6 @@ in
     age.keyFile = "/home/nixidev/.config/sops/age/keys.txt";
     secrets."polza_api_key" = { };
 
-    # Zed's polza provider needs the literal decrypted key, so render the whole
-    # settings.json at activation and link it below (see home.file).
-    templates."zed-settings.json".content = ''
-      {
-        "theme": {
-          "mode": "dark",
-          "dark": "DankShell Dark",
-          "light": "DankShell Light"
-        },
-        "buffer_font_family": "Fira Code",
-        "auto_install_extensions": {
-          "nix": true,
-          "toml": true,
-          "elixir": true,
-          "make": true
-        },
-        "lsp": {
-          "nil": {
-            "binary": {
-              "path": "${pkgs.nixd}/bin/nixd"
-            }
-          }
-        },
-        "language_models": {
-          "openai_compatible": {
-            "polza": {
-              "api_url": "https://polza.ai/api/v1",
-              "api_key": "${config.sops.placeholder.polza_api_key}",
-              "available_models": [
-                {
-                  "name": "deepseek/deepseek-v4.1-flash",
-                  "display_name": "DeepSeek V4.1 Flash",
-                  "max_tokens": 128000
-                }
-              ]
-            }
-          }
-        },
-        "agent": {
-          "default_model": {
-            "provider": "polza",
-            "model": "deepseek/deepseek-v4.1-flash"
-          }
-        },
-        "context_servers": {
-          "fetch": {
-            "command": "${pkgs.mcp-server-fetch}/bin/mcp-server-fetch"
-          },
-          "filesystem": {
-            "command": "${pkgs.mcp-server-filesystem}/bin/mcp-server-filesystem",
-            "args": [ "/home/nixidev" ]
-          },
-          "git": {
-            "command": "${pkgs.mcp-server-git}/bin/mcp-server-git"
-          },
-          "web-search": {
-            "command": "${pkgs.uv}/bin/uvx",
-            "args": [ "duckduckgo-mcp-server" ]
-          }
-        }
-      }
-    '';
-  };
-
-  # sops renders the template at activation; link it over Zed's settings.json.
-  # mkOutOfStoreSymlink keeps this pure (no absolute-path copy into the store).
-  home.file.".config/zed/settings.json" = {
-    source = config.lib.file.mkOutOfStoreSymlink config.sops.templates."zed-settings.json".path;
-    force = true;
   };
 
   # packages
@@ -208,10 +155,57 @@ in
   # zed
   programs.zed-editor = {
     enable = true;
-    # settings.json comes from the sops template (see sops.templates above).
-    # mutableUserSettings would jq-merge into (and clobber) that rendered file.
+    package = zedWithPolza;
+    # Declarative, read-only settings.json (no runtime jq merge).
     mutableUserSettings = false;
+    extensions = [ "nix" "toml" "elixir" "make" ];
+    userSettings = {
+      # theme comes from DMS/Matugen (dank-zed-theme.json)
+      theme = {
+        mode = "dark";
+        dark = "DankShell Dark";
+        light = "DankShell Light";
+      };
+      buffer_font_family = "Fira Code";
+
+      lsp.nil.binary.path = "${pkgs.nixd}/bin/nixd";
+
+      # No api_key here: Zed ignores it in settings.json. The wrapped package
+      # exports POLZA_API_KEY (derived from provider id "polza") instead.
+      language_models.openai_compatible.polza = {
+        api_url = "https://polza.ai/api/v1";
+        available_models = [
+          {
+            name = "deepseek/deepseek-v4.1-flash";
+            display_name = "DeepSeek V4.1 Flash";
+            max_tokens = 128000;
+          }
+        ];
+      };
+
+      agent.default_model = {
+        provider = "polza";
+        model = "deepseek/deepseek-v4.1-flash";
+      };
+
+      # mcp
+      context_servers = {
+        fetch.command = "${pkgs.mcp-server-fetch}/bin/mcp-server-fetch";
+        filesystem = {
+          command = "${pkgs.mcp-server-filesystem}/bin/mcp-server-filesystem";
+          args = [ "/home/nixidev" ];
+        };
+        git.command = "${pkgs.mcp-server-git}/bin/mcp-server-git";
+        web-search = {
+          command = "${pkgs.uv}/bin/uvx";
+          args = [ "duckduckgo-mcp-server" ];
+        };
+      };
+    };
   };
+
+  # Replace the leftover symlink from the old sops-template generation.
+  xdg.configFile."zed/settings.json".force = true;
 
   # zen
   programs.zen-browser = {

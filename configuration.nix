@@ -176,7 +176,6 @@ in
     WLR_RENDERER = "gles2";
     GBM_BACKEND = "nvidia_drm";
     LIBVA_DRIVER_NAME = "nvidia";
-    POLZA_API_KEY = config.sops.secrets."polza_api_key".path;
     POLZA_BASE_URL = "https://polza.ai/api/v1";
   };
 
