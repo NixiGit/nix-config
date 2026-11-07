@@ -19,6 +19,16 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelParams = [ "nvidia_drm.modeset=1" "consoleblank=0" ];
 
+  # secondary drive (never format)
+  fileSystems."/mnt/data" = {
+    device = "/dev/disk/by-uuid/066b2e5b-dc66-40a1-b45f-c319335b7d87";
+    fsType = "ext4";
+    options = [ "nofail" "users" ];
+  };
+  systemd.tmpfiles.rules = [
+    "d /mnt/data 0755 root root -"
+  ];
+
   # nix
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
