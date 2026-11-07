@@ -76,7 +76,22 @@ in
 
   # niri
   programs.niri.settings = {
-    layout.border.enable = false;
+    layout = {
+      gaps = 8;
+      center-focused-column = "on-overflow";
+      always-center-single-column = true;
+      default-column-width.proportion = 1.0;
+      preset-column-widths = [
+        { proportion = 1.0; }
+        { proportion = 0.5; }
+        { proportion = 0.33333; }
+      ];
+      border.enable = false;
+    };
+    overview = {
+      zoom = 0.5;
+      backdrop-color = "#1e1e2e";
+    };
     prefer-no-csd = true;
     hotkey-overlay.skip-at-startup = true;
     input = {
