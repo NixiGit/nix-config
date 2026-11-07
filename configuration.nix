@@ -1,4 +1,4 @@
-{ config, pkgs, lib, inputs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   autologin_on_7 = pkgs.autologin.overrideAttrs (_: {
@@ -14,12 +14,16 @@ in
     ./hardware-configuration.nix
   ];
 
+  # boot
   boot.loader.limine.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.kernelParams = [ "nvidia_drm.modeset=1" "consoleblank=0" ];
 
-  networking.hostName = "nix";
-  networking.networkmanager.enable = true;
+  # nix
+  nixpkgs.config.allowUnfree = true;
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # locale
   time.timeZone = "Europe/Moscow";
   i18n.defaultLocale = "en_US.UTF-8";
   i18n.extraLocaleSettings = {
@@ -33,35 +37,35 @@ in
     LC_TELEPHONE = "ru_RU.UTF-8";
     LC_TIME = "ru_RU.UTF-8";
   };
-  services.xserver.xkb = { layout = "us"; variant = ""; options = ""; };
+  services.xserver.xkb = {
+    layout = "us";
+    variant = "";
+    options = "";
+  };
 
-  programs.zsh.enable = true;
+  # network
+  networking.hostName = "nix";
+  networking.networkmanager.enable = true;
 
-  users.users."nixidev" = {
+  # users
+  users.users.nixidev = {
     isNormalUser = true;
     description = "nixidev";
     extraGroups = [ "networkmanager" "wheel" "seat" ];
     shell = pkgs.zsh;
   };
+  programs.zsh.enable = true;
   services.seatd.enable = true;
 
-  nixpkgs.config.allowUnfree = true;
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
+  # packages
   environment.systemPackages = with pkgs; [
-    wget
     kitty
     micro
     autologin_on_7
   ];
+  programs.nix-ld.enable = true;
 
-  programs.nh = {
-    enable = true;
-    clean.enable = true;
-    clean.extraArgs = "--keep-since 4d --keep 3";
-    flake = "/home/nixidev/nix-config";
-  };
-
+  # autologin
   systemd.services.autologin = {
     enable = true;
     restartIfChanged = lib.mkForce false;
@@ -90,14 +94,22 @@ in
     updateWtmp = true;
   };
 
+  # niri
   programs.niri.enable = true;
   systemd.user.services.niri.enableDefaultPath = false;
-
   xdg.portal.config.niri = {
     "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
   };
 
-  hardware.graphics = { enable = true; enable32Bit = true; };
+  # audio
+  services.pipewire.enable = true;
+  services.pipewire.pulse.enable = true;
+
+  # graphics
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia = {
     modesetting.enable = true;
@@ -105,23 +117,28 @@ in
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
-
-  programs.nix-ld.enable = true;
-
   environment.sessionVariables = {
     QT_QPA_PLATFORM = "wayland";
-    NIXOS_OZONE_WL = "1"; # Helps Electron apps use Wayland
+    NIXOS_OZONE_WL = "1";
     WLR_DRM_DEVICES = "/dev/dri/card1";
     WLR_RENDERER = "gles2";
     GBM_BACKEND = "nvidia_drm";
     LIBVA_DRIVER_NAME = "nvidia";
-    POLZA_AI_API_KEY = "pza-lvzZ64zjhasNU3TnzbW3eow2iJX9BUol";
+    POLZA_API_KEY = "REDACTED";
     POLZA_BASE_URL = "https://polza.ai/api/v1";
   };
 
-  programs.throne = { enable = true; tunMode.enable = true; };
+  programs.throne = {
+    enable = true;
+    tunMode.enable = true;
+  };
 
-  boot.kernelParams = [ "nvidia_drm.modeset=1" "consoleblank=0" ];
+  programs.nh = {
+    enable = true;
+    clean.enable = true;
+    clean.extraArgs = "--keep-since 4d --keep 3";
+    flake = "/home/nixidev/nix-config";
+  };
 
   system.stateVersion = "26.05";
 }
